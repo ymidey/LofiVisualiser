@@ -114,16 +114,8 @@ class App {
             CONFIG.SCENE.VINYL.RADIUS,
             CONFIG.SCENE.VINYL.SEGMENTS
         );
-        // Remplacer le MeshBasicMaterial par un MeshPhongMaterial pour de meilleurs effets
-        this.vinyl = new THREE.Mesh(
-            vinylGeometry,
-            new THREE.MeshPhongMaterial({
-                color: 0xFFFFFF,
-                specular: 0x111111,
-                shininess: 50,
-                transparent: true
-            })
-        ); this.scene.add(this.vinyl);
+        this.vinyl = new THREE.Mesh(vinylGeometry, new THREE.MeshBasicMaterial({ map: vinylTexture }));
+        this.scene.add(this.vinyl);
     }
 
     initTimeSlider() {
@@ -297,42 +289,13 @@ class App {
             ? 'rgba(255, 0, 0, 0.2)'
             : 'rgba(0, 255, 0, 0.2)';
 
-        // Charger la texture de l'album
-        this.loadAlbumTexture(track.album.cover);
         this.playTrack(track.preview);
-    }
-
-    loadAlbumTexture(coverUrl) {
-        // Créer une URL plus grande pour une meilleure qualité
-        const highResUrl = coverUrl.replace('56x56', '500x500');
-
-        new THREE.TextureLoader().load(
-            highResUrl,
-            (texture) => {
-                // Mettre à jour le matériau du vinyle
-                this.vinyl.material.map = texture;
-                this.vinyl.material.needsUpdate = true;
-
-                // Ajouter un effet de bordure
-                this.vinyl.material.bumpScale = 0.05;
-                this.vinyl.material.normalScale.set(0.5, 0.5);
-            },
-            undefined,
-            (err) => console.error('Erreur chargement texture:', err)
-        );
-    }
-
-    disposeOldTexture() {
-        if (this.vinyl.material.map) {
-            this.vinyl.material.map.dispose();
-        }
     }
 
     playTrack(previewUrl) {
         if (this.currentTrackUrl === previewUrl) {
             this.togglePlayback();
         } else {
-            this.disposeOldTexture(); // Nettoyer l'ancienne texture
             this.currentTrackUrl = previewUrl;
             this.currentAudio?.pause();
             this.currentAudio = new Audio(previewUrl);
